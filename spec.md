@@ -26,11 +26,11 @@ DocTrack is a Python CLI tool designed for legal professionals who edit document
 - **Dependencies**:
   - `click` - CLI framework
   - `dwdiff` - Text comparison (external binary)
-  - `pandoc` - Document conversion (external binary)
+  - `pypandoc` or `pypandoc_binary` - Pandoc wrapper for document conversion
   - `python-docx` - Word document manipulation
-  - `hashlib` - File change detection
-  - `datetime` - Timestamp handling
-  - `pathlib` - File system operations
+  - `hashlib` - File change detection (built-in)
+  - `datetime` - Timestamp handling (built-in)
+  - `pathlib` - File system operations (built-in)
 
 ### Directory Structure
 ```
@@ -133,15 +133,15 @@ doctrack <subcommand> [options]
 ### Diff Implementation
 - Use external `dwdiff` binary for text comparison
 - Default options: word-level diff with color output
-- Fallback to line-based diff if dwdiff unavailable
+- Fallback to difflib if dwdiff unavailable
 - Handle binary execution errors gracefully
 
 ### Word Export Process
-1. Convert original markdown to .docx using pandoc
-2. Convert latest markdown to .docx using pandoc
-3. Use python-docx to create redline document
-4. Mark deletions with strikethrough
-5. Mark additions with underline
+1. Use `pypandoc` to convert original markdown to .docx
+2. Use `pypandoc` to convert latest markdown to .docx
+3. Use python-docx to create redline document showing differences
+4. Mark deletions with strikethrough formatting
+5. Mark additions with underline formatting
 6. Save to exports directory
 
 ## Error Handling
@@ -159,7 +159,8 @@ doctrack <subcommand> [options]
 
 ### External Tool Errors
 - **dwdiff not found**: "Warning: dwdiff not found. Using basic diff."
-- **pandoc not found**: "Error: pandoc required for Word export. Please install pandoc."
+- **pypandoc import error**: "Error: pypandoc required for Word export. Install with: pip install pypandoc"
+- **pandoc not found**: "Error: pandoc binary not found. Install pandoc or use: pip install pypandoc-binary"
 - **Conversion failed**: "Error: Failed to convert document to Word format"
 
 ### Command Line Errors
@@ -181,12 +182,12 @@ doctrack <subcommand> [options]
 
 3. **Diff Functionality**
    - Test dwdiff integration
-   - Test fallback diff mechanism
+   - Test fallback diff mechanism using difflib
    - Test version comparison logic
 
 4. **Word Export**
-   - Test pandoc integration
-   - Test redline generation
+   - Test pypandoc integration
+   - Test redline generation with python-docx
    - Test output file naming
 
 ### Integration Tests
@@ -197,7 +198,7 @@ doctrack <subcommand> [options]
    - Export Word redline
 
 2. **Error Scenarios**
-   - Missing external dependencies
+   - Missing external dependencies (dwdiff) and Python dependencies (pypandoc, python-docx)
    - File permission issues
    - Corrupted metadata
 
@@ -217,12 +218,16 @@ doctrack <subcommand> [options]
 
 ### Prerequisites
 - Python 3.8+
-- dwdiff (install via package manager)
-- pandoc (install via package manager)
+- dwdiff (install via package manager: `brew install dwdiff` on macOS, `apt-get install dwdiff` on Ubuntu)
 
 ### Installation
 ```bash
 pip install doctrack
+```
+
+This will automatically install pypandoc and python-docx. For users who prefer pandoc bundled:
+```bash
+pip install doctrack[binary]  # includes pypandoc-binary
 ```
 
 ### Development Setup
